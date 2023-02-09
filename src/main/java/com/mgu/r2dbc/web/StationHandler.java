@@ -3,20 +3,23 @@ package com.mgu.r2dbc.web;
 import com.mgu.r2dbc.repository.StationRepository;
 import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.relational.core.query.Query;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.server.ServerRequest;
-import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.reactive.function.server.*;
 
 import com.mgu.r2dbc.entity.Station;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import static org.springframework.data.relational.core.query.Criteria.where;
+import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
+import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 
 /**
  * Contain all request handlers dealing with {@link Station} entity/table.
@@ -28,6 +31,17 @@ public class StationHandler {
 
     @Autowired
     protected StationRepository repository;
+
+    @Bean
+    @Profile("optim")
+    RouterFunction<ServerResponse> stationRouter() {
+        return RouterFunctions
+                .route(GET("/stations"), this::getAllStationsWithRepositoryQuery)
+                .andRoute(GET("/stations-v2"), this::getAllStationsWithTemplates)
+                .andRoute(GET("/stations-v3"), this::getAllStationsWithExampleMatcher)
+                .andRoute(GET("/stations/{iataCode}"), this::getStationByIataCode)
+                .andRoute(POST("/stations").and(RequestPredicates.accept(MediaType.APPLICATION_JSON)), this::createStation);
+    }
 
     /**
      * Return a list of {@link Station} making the request with the {@link R2dbcEntityTemplate}.
@@ -42,7 +56,9 @@ public class StationHandler {
 
         Flux<Station> data = serverRequest.queryParam("fullName")
                 .map(s -> s + '%')
-                .map(s -> template.select(Station.class).matching(Query.query(where("fullName").like(s).ignoreCase(true))).all())
+                .map(s -> template.select(Station.class)
+                        .matching(Query.query(where("fullName").like(s).ignoreCase(true)))
+                        .all())
                 .orElse(template.select(Station.class).all());
 
         return ServerResponse.ok()

@@ -7,6 +7,7 @@ import com.mgu.r2dbc.entity.AirPlane;
 import com.mgu.r2dbc.entity.FlightRoute;
 import com.mgu.r2dbc.entity.Station;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.RequestPredicates;
@@ -25,6 +26,7 @@ public class ApplicationRouter {
      * @param sh - the StationHandler bean
      * @return
      */
+    @Profile("!optim")
     @Bean
     RouterFunction<ServerResponse> stationRouter(StationHandler sh) {
         return RouterFunctions

@@ -23,7 +23,7 @@ Then you can run the following requests (requests done using HTTPie):
 
 # Additional resources
 
-The other md files from this repository ca be used as a tutorial to put in place and understand
+The other md files from this repository can be used as a tutorial to put in place and understand
 basic concepts of R2DBC. The entry point is the [first document](01-r2dbc-introduction.md).
 
 
