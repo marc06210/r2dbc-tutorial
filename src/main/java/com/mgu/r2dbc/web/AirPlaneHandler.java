@@ -16,7 +16,7 @@ public class AirPlaneHandler {
     @Autowired
     protected AirPlaneRepository repository;
 
-    // the following line requires ss4h-reactive
+    // when secured, this is where to put the access restriction
 //    @PreAuthorize("hasAuthority('ADMIN')")
     public Mono<ServerResponse> getAllAirPlanes(ServerRequest serverRequest) {
         Mono<ServerResponse> a = ServerResponse.ok()
