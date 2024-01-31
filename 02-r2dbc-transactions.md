@@ -40,62 +40,63 @@ internal call. It is then possible to inject manually a TransactionalOperator
 (https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/transaction/reactive/TransactionalOperator.html and https://docs.spring.io/spring-framework/docs/current/reference/html/data-access.html#tx-prog-operator) into our functional flow.
 
 Here is the modified version of the **ProgramService** class that uses this approach.
+```java
+package com.mgu.r2dbc.service;
 
-    package com.mgu.r2dbc.service;
+import java.util.Arrays;
+import java.util.List;
 
-    import java.util.Arrays;
-    import java.util.List;
-    
-    import org.springframework.beans.factory.annotation.Autowired;
-    import org.springframework.stereotype.Service;
-    import org.springframework.transaction.reactive.TransactionalOperator;
-    
-    import com.mgu.r2dbc.entity.AirPlane;
-    import com.mgu.r2dbc.entity.FlightRoute;
-    import com.mgu.r2dbc.entity.Station;
-    import com.mgu.r2dbc.repository.AirPlaneRepository;
-    import com.mgu.r2dbc.repository.FlightRouteRepository;
-    import com.mgu.r2dbc.repository.StationRepository;
-    import com.mgu.r2dbc.web.request.CreateRouteInput;
-    
-    import reactor.core.publisher.Flux;
-    import reactor.core.publisher.Mono;
-    import reactor.util.function.Tuples;
-    
-    @Service
-    public class ProgramService {
-        @Autowired
-        private StationRepository stationRepository;
-        @Autowired
-        private AirPlaneRepository airPlaneRepository;
-        @Autowired
-        private FlightRouteRepository flightRouteRepository;
-    
-        @Autowired
-        private TransactionalOperator operator;
-     
-        public Mono<Void> createRoute(CreateRouteInput input) {
-            Flux<Station> stations = stationRepository
-                    .findByIataCodeIn(Arrays.asList(input.stationFrom(), input.stationTo()));
-            Mono<AirPlane> airPlane = airPlaneRepository.findByName(input.flightName())
-                    .doOnNext(ap -> ap.setWorkInProgress(true)).flatMap(airPlaneRepository::save);
-     
-            return Mono
-                    .zip(airPlane, stations.collectList(),
-                            (airplane, st) -> Tuples.of(airPlane,
-                                    new FlightRoute(getStationByCode(input.stationFrom(), st).getId(),
-                                            getStationByCode(input.stationTo(), st).getId(), airplane.getId())))
-                    .flatMap(t -> flightRouteRepository.save(t.getT2()).thenReturn(t.getT1())).flatMap(ap -> ap)
-                    .doOnNext(ap -> ap.setWorkInProgress(false))
-                    .flatMap(airPlaneRepository::save)
-                    .as(operator::transactional) // alternate solution for the transaction
-                    .then();
-        }
-     
-        protected Station getStationByCode(String iataCode, List<Station> stations) {
-            return stations.stream().filter(station -> iataCode.equals(station.getIataCode())).findFirst().orElse(null);
-        }
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.reactive.TransactionalOperator;
+
+import com.mgu.r2dbc.entity.AirPlane;
+import com.mgu.r2dbc.entity.FlightRoute;
+import com.mgu.r2dbc.entity.Station;
+import com.mgu.r2dbc.repository.AirPlaneRepository;
+import com.mgu.r2dbc.repository.FlightRouteRepository;
+import com.mgu.r2dbc.repository.StationRepository;
+import com.mgu.r2dbc.web.request.CreateRouteInput;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
+
+@Service
+public class ProgramService {
+    @Autowired
+    private StationRepository stationRepository;
+    @Autowired
+    private AirPlaneRepository airPlaneRepository;
+    @Autowired
+    private FlightRouteRepository flightRouteRepository;
+
+    @Autowired
+    private TransactionalOperator operator;
+ 
+    public Mono<Void> createRoute(CreateRouteInput input) {
+        Flux<Station> stations = stationRepository
+                .findByIataCodeIn(Arrays.asList(input.stationFrom(), input.stationTo()));
+        Mono<AirPlane> airPlane = airPlaneRepository.findByName(input.flightName())
+                .doOnNext(ap -> ap.setWorkInProgress(true)).flatMap(airPlaneRepository::save);
+ 
+        return Mono
+                .zip(airPlane, stations.collectList(),
+                        (airplane, st) -> Tuples.of(airPlane,
+                                new FlightRoute(getStationByCode(input.stationFrom(), st).getId(),
+                                        getStationByCode(input.stationTo(), st).getId(), airplane.getId())))
+                .flatMap(t -> flightRouteRepository.save(t.getT2()).thenReturn(t.getT1())).flatMap(ap -> ap)
+                .doOnNext(ap -> ap.setWorkInProgress(false))
+                .flatMap(airPlaneRepository::save)
+                .as(operator::transactional) // alternate solution for the transaction
+                .then();
     }
+ 
+    protected Station getStationByCode(String iataCode, List<Station> stations) {
+        return stations.stream().filter(station -> iataCode.equals(station.getIataCode())).findFirst().orElse(null);
+    }
+}
+```
 
 ## Next steps
 
