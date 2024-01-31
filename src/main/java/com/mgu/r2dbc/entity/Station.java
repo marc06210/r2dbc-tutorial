@@ -10,10 +10,6 @@ public class Station {
     private String iataCode;
     private String fullName;
  
-    public Long getId() {
-        return id;
-    }
- 
     public Station() {
     }
  
