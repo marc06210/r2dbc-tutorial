@@ -1,12 +1,10 @@
 package com.mgu.r2dbc.entity;
 
-import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 
 @Data
-@Builder
 public class FlightRoute {
     public class Route {
         Long fromStation;
