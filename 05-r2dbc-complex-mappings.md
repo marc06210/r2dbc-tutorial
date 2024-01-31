@@ -100,3 +100,7 @@ public R2dbcCustomConversions customConversions() {
     return new R2dbcCustomConversions(CustomConversions.StoreConversions.NONE,converters);
 }
 ```
+
+## Next anf final step
+
+[R2DBC and queries](06-r2dbc-queries.md)
