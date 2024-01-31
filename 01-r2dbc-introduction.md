@@ -26,7 +26,7 @@ With R2DBC it is not possible to create the database structure from the entities
 file that we will have to load at startup.
 
 Here is the content of the **createDatabase.sql** file
-
+```sql
     DROP TABLE IF EXISTS flight_route;
     DROP TABLE IF EXISTS station;
     DROP TABLE IF EXISTS air_plane;
@@ -45,7 +45,7 @@ Here is the content of the **createDatabase.sql** file
     ('ORY', 'Paris Orly'),('NCE', 'Nice Cote d Azur');
     
     insert into air_plane(name) values ('AF001'),('AF002'),('AF003');
-
+```
 The **air_plane** table contains a **work_in_progress** column that we will use to demonstrate the transactions.
 
 
@@ -55,7 +55,7 @@ You can either run this script manually or here we will load it at startup. As w
 To do it we define a **ConnectionFactoryInitializer** bean that can populate a database.
 
 We do it in our main class.
-
+```java
     package com.mgu.r2dbc;
     
     import org.springframework.boot.SpringApplication;
@@ -81,6 +81,7 @@ We do it in our main class.
             return initializer;
         }
     }
+```
 
 And of course, we configure the **application.yml** file with the database connection information. And we will also
 set the log level for database queries to **DEBUG**
