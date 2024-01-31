@@ -56,7 +56,7 @@ We will expose a method that retrieves all the records from the **flight_route**
 a function **loadRouteDependencies** whose role is to retrieve from the database both **Stations** and the **AirPlane**
 to enrich the result.
 
-```
+```java
 public Flux<FlightRoute> loadAllRoutesAndRelations() {
     return flightRouteRepository.findAll()
         .flatMap(this::loadRouteDependencies);
