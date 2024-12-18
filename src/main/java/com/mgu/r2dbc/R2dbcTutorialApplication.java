@@ -27,7 +27,7 @@ public class R2dbcTutorialApplication {
         SpringApplication.run(R2dbcTutorialApplication.class, args);
     }
 
-    @Bean
+    //@Bean
     public ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
         ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
         initializer.setConnectionFactory(connectionFactory);

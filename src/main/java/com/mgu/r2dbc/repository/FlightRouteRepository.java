@@ -9,5 +9,5 @@ import reactor.core.publisher.Flux;
 
 public interface FlightRouteRepository extends ReactiveCrudRepository<FlightRoute, Long> {
     @Query("SELECT f.* FROM flight_route f, air_plane ap where ap.name = :flightName AND ap.id = f.flight_id")
-    public Flux<FlightRoute> findRoutesForFlight(String flightName);
+    Flux<FlightRoute> findRoutesForFlight(String flightName);
 }

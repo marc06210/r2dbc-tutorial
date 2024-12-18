@@ -1,13 +1,22 @@
 Created in March 2022.
 
-This page is a short introduction to the R2DBC feature. R2DBC is the reactive way of doing JDBC.
+Have you heard about R2DBC and aren't sure where to start? This guide is for you. If you're unfamiliar with R2DBC,
+it's the reactive approach to JDBC.
+
+We will explore key concepts you need to understand before starting to work with R2DBC through small examples:
+- setup and basic repositories
+- transactions
+- testing with junit
+- relations between entities and some advanced mappings
+- different types of queries
+
+Most of the time, JDBC will be a perfect fit for your needs. However, there may be situations where you require more 
+reactive features. In micro-services applications, mixing "standard" APIs using JDBC with other R2DBC applications is easy.
 
 The Spring documentation about R2DBC is available [here](https://docs.spring.io/spring-data/r2dbc/docs/1.1.0.RELEASE/reference/html/#get-started:first-steps:what).
 
-The code within this repository contains the update covered in the [second part](02-r2dbc-relations.md) of the article.
+This tutorial is an easy way to dive into the R2DBC world.
 
-This tutorial duplicates the code that is also present in the sources but the sources hold the final code.
-If you follow the tutorial you will see the evolution of the code.
 
 # Project creation
 
@@ -116,6 +125,9 @@ File **Airplane.java**
 package com.mgu.r2dbc.entity;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -124,10 +136,15 @@ import org.springframework.data.annotation.Version;
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
+@RequiredArgsConstructor
 public class AirPlane {
     @Id
+    @NonNull
     private Long id;
+    @NonNull
     private String name;
+    @NonNull
     private boolean workInProgress = false;
 
     @Version
@@ -136,15 +153,7 @@ public class AirPlane {
     private LocalDateTime createdDate;
     @LastModifiedDate
     private LocalDateTime lastModifiedDate;
-
-    public AirPlane() {}
- 
-    public AirPlane(Long id, String name, boolean workInProgress) {
-        this.id = id;
-        this.name = name;
-        this.workInProgress = workInProgress;
-    }
-}
+ }
 ```
 
 File **FlightRoute.java**
@@ -152,58 +161,91 @@ File **FlightRoute.java**
 package com.mgu.r2dbc.entity;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 
+import java.util.Optional;
+
 @Data
+@NoArgsConstructor
 public class FlightRoute {
-    @Id
-    private Long id;
-    private Route route;
-    private Long flightId;
- 
-    public FlightRoute() {
+
+  @Data
+  public class Route {
+    private Long fromStation;
+    private Long toStation;
+  }
+
+  @Id
+  private Long id;
+  private Route route;
+  private Long flightId;
+
+  @Transient
+  private Station stationFrom;
+  @Transient
+  private Station stationTo;
+  @Transient
+  private AirPlane flight;
+
+  public FlightRoute(long fromStation, long toStation, long flightId) {
+    this.route = new Route();
+    this.route.setFromStation(fromStation);
+    route.setToStation(toStation);
+    this.flightId = flightId;
+  }
+
+  public Long getFromStation() {
+    return Optional.ofNullable(this.route)
+            .map(Route::getFromStation)
+            .orElse(null);
+  }
+
+  public void setFromStation(Long fromStation) {
+    if(this.route==null) {
+      this.route = new Route();
     }
- 
-    public FlightRoute(long fromStation, long toStation, long flightId) {
-        Route route = new Route();
-        route.fromStation = fromStation;
-        route.toStation = toStation;
-        this.route = route;
-        this.flightId = flightId;
+    this.route.fromStation = fromStation;
+  }
+
+  public Long getToStation() {
+    return Optional.ofNullable(this.route)
+            .map(Route::getToStation)
+            .orElse(null);
+  }
+
+  public void setToStation(Long toStation) {
+    if(this.route==null) {
+      this.route = new Route();
     }
+    this.route.toStation = toStation;
+  }
 }
+
 ```
 
 File **Station.java**
 ```java
 package com.mgu.r2dbc.entity;
 
-import lombok.Data;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 
+@NoArgsConstructor
+@RequiredArgsConstructor
 @Data
 public class Station {
-    @Id
-    private Long id;
-    private String iataCode;
-    private String fullName;
+  @Id
+  private Long id;
+  @NonNull
+  private String iataCode;
+  @NonNull
+  private String fullName;
 
-    public Long getId() {
-        return id;
-    }
- 
-    public Station() {
-    }
- 
-    public Station(String iataCode, String fullName) {
-        this.iataCode = iataCode;
-        this.fullName = fullName;
-    }
-
-    public String toString() {
-        return "Station: " + id + "/" + iataCode + "/"+fullName;
-    }
+  public String toString() {
+    return "Station: " + id + "/" + iataCode + "/"+fullName;
+  }
 }
 ```
 ## The repositories
@@ -225,7 +267,7 @@ import com.mgu.r2dbc.AirPlane;
 import reactor.core.publisher.Mono;
 
 public interface AirPlaneRepository extends ReactiveCrudRepository<AirPlane, Long> {
-    public Mono<AirPlane> findByName(String name);
+    Mono<AirPlane> findByName(String name);
 }
 ```
 
@@ -242,7 +284,7 @@ import reactor.core.publisher.Flux;
 
 public interface FlightRouteRepository extends ReactiveCrudRepository<FlightRoute, Long> {
     @Query("SELECT f.* FROM flight_route f, air_plane ap where ap.name = :flightName AND ap.id = f.flight_id")
-    public Flux<FlightRoute> findRoutesForFlight(String flightName);
+    Flux<FlightRoute> findRoutesForFlight(String flightName);
 }
 ```
 
@@ -261,9 +303,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface StationRepository extends ReactiveCrudRepository<Station, Long>, ReactiveQueryByExampleExecutor<Station> {
-    public Mono<Station> findByIataCode(String iataCode);
-    public Flux<Station> findByIataCodeIn(Collection<String>iataCodes);
-    public Flux<Station> findByFullNameLikeIgnoreCase(String fullName);
+    Mono<Station> findByIataCode(String iataCode);
+    Flux<Station> findByIataCodeIn(Collection<String>iataCodes);
+    Flux<Station> findByFullNameLikeIgnoreCase(String fullName);
 }
 ```
 
@@ -303,14 +345,17 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
 @Service
-public class ProgramService {
-    @Autowired
-    private StationRepository stationRepository;
-    @Autowired
-    private AirPlaneRepository airPlaneRepository;
-    @Autowired
-    private FlightRouteRepository flightRouteRepository;
-
+public class ProgramService { 
+    private final StationRepository stationRepository;
+    private final AirPlaneRepository airPlaneRepository;
+    private final FlightRouteRepository flightRouteRepository;
+    
+    public ProgramService(StationRepository stationRepository, AirPlaneRepository airPlaneRepository, FlightRouteRepository flightRouteRepository) {
+        this.stationRepository = stationRepository;
+        this.airPlaneRepository = airPlaneRepository;
+        this.flightRouteRepository = flightRouteRepository;
+    }
+  
     public Mono<Boolean> createRoute(CreateRouteInput input) {
         Flux<Station> stations = stationRepository.findByIataCodeIn(Arrays.asList(input.stationFrom(), input.stationTo()));
         Mono<AirPlane> airPlane = airPlaneRepository.findByName(input.flightName())

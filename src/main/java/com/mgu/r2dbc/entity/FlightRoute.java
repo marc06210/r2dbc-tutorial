@@ -1,14 +1,20 @@
 package com.mgu.r2dbc.entity;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 
+import java.util.Optional;
+
 @Data
+@NoArgsConstructor
 public class FlightRoute {
+
+    @Data
     public class Route {
-        Long fromStation;
-        Long toStation;
+        private Long fromStation;
+        private Long toStation;
     }
 
     @Id
@@ -17,25 +23,23 @@ public class FlightRoute {
     private Long flightId;
 
     @Transient
-    private AirPlane flight;
-    @Transient
     private Station stationFrom;
     @Transient
     private Station stationTo;
- 
-    public FlightRoute() {
-    }
- 
+    @Transient
+    private AirPlane flight;
+
     public FlightRoute(long fromStation, long toStation, long flightId) {
-        Route route = new Route();
-        route.fromStation = fromStation;
-        route.toStation = toStation;
-        this.route = route;
+        this.route = new Route();
+        this.route.setFromStation(fromStation);
+        route.setToStation(toStation);
         this.flightId = flightId;
     }
 
     public Long getFromStation() {
-        return this.route != null ? this.route.fromStation : null;
+        return Optional.ofNullable(this.route)
+                .map(Route::getFromStation)
+                .orElse(null);
     }
  
     public void setFromStation(Long fromStation) {
@@ -46,7 +50,9 @@ public class FlightRoute {
     }
  
     public Long getToStation() {
-        return this.route != null ? this.route.toStation : null;
+        return Optional.ofNullable(this.route)
+                .map(Route::getToStation)
+                .orElse(null);
     }
  
     public void setToStation(Long toStation) {
@@ -55,5 +61,4 @@ public class FlightRoute {
         }
         this.route.toStation = toStation;
     }
-
 }

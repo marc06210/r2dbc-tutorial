@@ -6,28 +6,12 @@ logging:
 
 spring:
   r2dbc:
-    url: r2dbc:postgresql://localhost:5432/teccse_reactive
-    username: teccse
-    password: teccse
-
-afklm:
-  security:
-    public-endpoints: >
-      /stations/*,
-      /faa/*
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
 server:
   reactive:
     session:
       cookie:
         name: JSESSIONID
-# the following section requires ss4h reactive
-#afklm:
-#  security:
-#    roles:
-#      P_ADMIN:
-#        - ADMIN
-#        - MODIF
-#      P_USER_EMPTY:
-#      P_USER:
-#        - CONSULT

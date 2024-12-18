@@ -29,10 +29,9 @@ public class ProgramHandler {
     }
 
     public Mono<ServerResponse> getAllRoutes(ServerRequest serverRequest) {
-        Mono<ServerResponse> a = ServerResponse.ok()
+        return ServerResponse.ok()
                 .contentType(serverRequest.headers().contentType().orElse(MediaType.APPLICATION_JSON))
                 .body(programService.loadAllRoutesAndRelations(), FlightRoute.class);
-        return a;
     }
 
     public Mono<ServerResponse> getRouteForFlight(ServerRequest serverRequest) {

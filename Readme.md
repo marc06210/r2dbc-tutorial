@@ -1,4 +1,34 @@
-# What it is about
+Most developer are familiar with JDBC and with reactive programing.
+But seldom have I seen projects involving R2DBC which is the reactive counterpart of JDBC.
+
+If you don't know R2DBC or don't know where to start with it, this article is for you.
+
+We will go through simple examples that should cover 95% of your needs including transactions.
+
+TODO: image avec icone R2DBC et spring
+
+# What I'v used for this sample
+
+ - docker: to init and host the database
+ - maven
+ - java 21
+ - httpie (https://httpie.io/): a really cool tool to perform HTTP request from command line, you are free to use alternate tools like postman or whatever
+
+# What we are going to do?
+
+We will work on an application about airline industry.
+
+We will expose REST endpoints, to list stations, flights and schedules.
+
+In order to see the transaction in action we will also expose a endpoint to create a route. TODO: verify this
+
+# Project setup
+
+Let's go quickly on th
+
+#
+
+
 
 This is a sample application using R2DBC the reactive version of JDBC.
 
