@@ -7,5 +7,5 @@ import com.mgu.r2dbc.entity.AirPlane;
 import reactor.core.publisher.Mono;
 
 public interface AirPlaneRepository extends ReactiveCrudRepository<AirPlane, Long> {
-    public Mono<AirPlane> findByName(String name);
+    Mono<AirPlane> findByName(String name);
 }

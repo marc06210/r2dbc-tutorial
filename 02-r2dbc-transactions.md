@@ -7,7 +7,7 @@ Let's restart the application in order to start from a known database status.
 We first check the airplanes **http :8080/airplanes**. We validate that we have three planes and all of them have
 **workInProgress** to **false**.
 
-We then create a route **echo -n '{"flightName": "AF003", "stationFrom": "NCE", "stationTo": "CDG"}' | http POST :8080/routes**.
+Then, we create a route **echo -n '{"flightName": "AF003", "stationFrom": "NCE", "stationTo": "CDG"}' | http POST :8080/routes**.
 
 We check that the route is created **http :8080/routes** will return one entry.
 
@@ -15,7 +15,7 @@ We check again the airplanes **http :8080/airplanes**. We validate that we have 
 to **false**.
 
 Now we will create the same route again but for flight AF002 **echo -n '{"flightName": "AF002", "stationFrom": "NCE", "stationTo": "CDG"}' | http POST :8080/routes**.
-The return code of that invocation is **520** which is expected because it corresponds to the error handler we have defined and
+The return code of that invocation is **520** which is expected. Indeed, it corresponds to the error handler we have defined and
 an exception has been raised due to the violation of the SQL constraint.
 
 So let's check again the airplanes... but wait this time the flight AF002 has still the **workInProgress** set to **true**!!!

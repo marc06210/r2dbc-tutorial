@@ -1,4 +1,5 @@
 package com.mgu.r2dbc.service;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,12 +21,15 @@ import reactor.util.function.Tuples;
 
 @Service
 public class ProgramService {
-    @Autowired
-    private StationRepository stationRepository;
-    @Autowired
-    private AirPlaneRepository airPlaneRepository;
-    @Autowired
-    private FlightRouteRepository flightRouteRepository;
+    private final StationRepository stationRepository;
+    private final AirPlaneRepository airPlaneRepository;
+    private final FlightRouteRepository flightRouteRepository;
+
+    public ProgramService(StationRepository stationRepository, AirPlaneRepository airPlaneRepository, FlightRouteRepository flightRouteRepository) {
+        this.stationRepository = stationRepository;
+        this.airPlaneRepository = airPlaneRepository;
+        this.flightRouteRepository = flightRouteRepository;
+    }
 
     @Transactional
     public Mono<Boolean> createRoute(CreateRouteInput input) {
@@ -45,9 +49,11 @@ public class ProgramService {
                 .thenReturn(Boolean.TRUE);
     }
 
-
     protected Station getStationByCode(String iataCode, List<Station> stations) {
-        return stations.stream().filter(station -> iataCode.equals(station.getIataCode())).findFirst().orElse(null);
+        return stations.stream()
+                .filter(station -> iataCode.equals(station.getIataCode()))
+                .findFirst()
+                .orElse(null);
     }
 
     public Flux<FlightRoute> loadAllRoutesAndRelations() {

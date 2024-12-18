@@ -22,7 +22,7 @@ import com.mgu.r2dbc.entity.Station;
 import reactor.core.publisher.Flux;
 
 public interface StationRepository extends ReactiveCrudRepository<Station, Long> {
-    public Flux<Station> findByFullNameLikeIgnoreCase(String fullName);
+    Flux<Station> findByFullNameLikeIgnoreCase(String fullName);
 }
 ```
 
